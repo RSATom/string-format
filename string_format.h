@@ -1,5 +1,5 @@
 /*****************************************************************************
-* Copyright © 2003-2012 Sergey Radionov <rsatom_gmail.com>
+* Copyright © 2003-2012, 2016 Sergey Radionov <rsatom_gmail.com>
 * All rights reserved.
 *
 * Redistribution and use in source and binary forms, with or without
@@ -36,188 +36,174 @@ template<class Ch, class Tr=std::char_traits<Ch> >
 class basic_string_format
 {
 public:
-	typedef std::basic_string<Ch, Tr>	string_type;
+    typedef std::basic_string<Ch, Tr> string_type;
 
 private:
-	typedef typename string_type::size_type string_size_type;
-	typedef std::basic_ostringstream<Ch, Tr>	ostringstream_type;
+    typedef typename string_type::size_type  string_size_type;
+    typedef std::basic_ostringstream<Ch, Tr> ostringstream_type;
 
 public:
-	/*
-	формат строки:
-		"%%" заменяется на "%";
-		"%_" является местом под значение;
-		если в строке не осталось больше мест под значение,
-		но делается попытка добавить еще одно значение,
-		то оно просто добавляется в конец.
-	*/
+    /*
+    "%%" - will be replaced with "%";
+    "%_" - placehoder;
+    if threre are no any placeholder remain next values will be added to end
+    */
 
-	basic_string_format():m_FormatStringPos(0){}
+    basic_string_format() : m_FormatStringPos(0) {}
 
-	basic_string_format(const Ch* FormatStr)
-		:m_FormatString(FormatStr), m_FormatStringPos(0){push_next();}
+    basic_string_format(const Ch* FormatStr) :
+        m_FormatString(FormatStr), m_FormatStringPos(0) { push_next(); }
 
-	basic_string_format(const string_type& FormatStr)
-		:m_FormatString(FormatStr), m_FormatStringPos(0){push_next();}
+    basic_string_format(const string_type& FormatStr):
+        m_FormatString(FormatStr), m_FormatStringPos(0) { push_next(); }
 
-	//обнуляет результат, но строка формата остатется прежней
-	void clear();
-	//выставляет новую строку формата и обнуляет результат
-	void set_format_str(const Ch* FormatStr);
-	void set_format_str(const string_type& FormatStr);
+    void clear();
 
-	template<class T>
-	basic_string_format& operator<<(const T& x)
-	{
-		return (*this)%x;
-	}
+    void set_format_str(const Ch* FormatStr);
+    void set_format_str(const string_type& FormatStr);
 
-	//позволяет отправлять одно и то же значение несколько раз
-	template<class T>
-	basic_string_format& operator()(const T& x, unsigned char Count)
-	{
-		for(;Count>0;--Count) (*this)%x;
-		return (*this);
-	}
+    template<class T>
+    basic_string_format& operator<< (const T& x)
+    {
+        return (*this)%x;
+    }
 
-	template<class T>
-	basic_string_format& operator()(const T& x)
-	{
-		return (*this)%x;
-	}
+    template<class T>
+    basic_string_format& operator() (const T& x, unsigned char count)
+    {
+        for(; count>0; --count)
+            (*this)%x;
 
-	template<class T>
-	basic_string_format& operator%(const T& x)
-	{
-		m_OutStream<<x;
-		push_next();
-		return *this;
-	}
+        return (*this);
+    }
 
-	basic_string_format& operator%(
-		std::ios_base& (*pf)(std::ios_base&))
-	{
-		m_OutStream<<pf;
-		return *this;
-	}
+    template<class T>
+    basic_string_format& operator() (const T& x)
+    {
+        return (*this)%x;
+    }
 
-	basic_string_format& operator%(
-		std::basic_ios<Ch, Tr>& (*pf)(std::basic_ios<Ch, Tr>&))
-	{
-		m_OutStream<<pf;
-		return *this;
-	}
+    template<class T>
+    basic_string_format& operator% (const T& x)
+    {
+        m_OutStream << x;
+        push_next();
+        return *this;
+    }
 
-	basic_string_format& operator%(
-		std::basic_ostream<Ch, Tr>& (*pf)(std::basic_ostream<Ch, Tr>&))
-	{
-		m_OutStream<<pf;
-		return *this;
-	}
+    basic_string_format& operator% (std::ios_base& (*pf) (std::ios_base&))
+    {
+        m_OutStream << pf;
+        return *this;
+    }
 
-	string_type str()
-	{
-		push_remainder();
-		return m_OutStream.str();
-	}
+    basic_string_format& operator% (std::basic_ios<Ch, Tr>& (*pf) (std::basic_ios<Ch, Tr>&))
+    {
+        m_OutStream << pf;
+        return *this;
+    }
 
-	operator string_type()
-	{
-		return str();
-	}
+    basic_string_format& operator% (std::basic_ostream<Ch, Tr>& (*pf) (std::basic_ostream<Ch, Tr>&))
+    {
+        m_OutStream << pf;
+        return *this;
+    }
+
+    string_type str()
+    {
+        push_remainder();
+        return m_OutStream.str();
+    }
+
+    operator string_type()
+    {
+        return str();
+    }
 
 private:
-	void push_next();
-	void push_remainder();
+    void push_next();
+    void push_remainder();
 
 private:
-	string_type m_FormatString;
-	string_size_type m_FormatStringPos;
-	ostringstream_type m_OutStream;
+    string_type m_FormatString;
+    string_size_type m_FormatStringPos;
+    ostringstream_type m_OutStream;
 };
 
-//обнуляет результат, но строка формата остатется прежней
 template<class Ch, class Tr>
 void basic_string_format<Ch, Tr>::clear()
 {
-	m_OutStream.str(string_type());
+    m_OutStream.str(string_type());
 }
 
 template<class Ch, class Tr>
-void basic_string_format<Ch, Tr>::set_format_str(const Ch* FormatStr)
+void basic_string_format<Ch, Tr>::set_format_str(const Ch* formatStr)
 {
-	set_format_str(string_type(FormatStr));
+    set_format_str(string_type(formatStr));
 }
 
 template<class Ch, class Tr>
-void basic_string_format<Ch, Tr>::set_format_str(const string_type& FormatStr)
+void basic_string_format<Ch, Tr>::set_format_str(const string_type& formatStr)
 {
-	clear();
-	m_FormatString = FormatStr;
-	m_FormatStringPos = 0;
-	push_next();
+    clear();
+    m_FormatString = formatStr;
+    m_FormatStringPos = 0;
+    push_next();
 }
 
 template<class Ch, class Tr>
 void basic_string_format<Ch, Tr>::push_next()
 {
-	//уже в конце строки формата
-	if(m_FormatStringPos==string_type::npos) return;
+    if(m_FormatStringPos == string_type::npos) return;
 
-	const Ch ArgChar  =m_OutStream.widen('%');
-	const Ch ArgChar2 =m_OutStream.widen('_');
-	const string_size_type FormatLen = m_FormatString.length();
+    const Ch ArgChar  = m_OutStream.widen('%');
+    const Ch ArgChar2 = m_OutStream.widen('_');
+    const string_size_type FormatLen = m_FormatString.length();
 
-	bool Continue;
-	do{
-		Continue = false;
-		string_size_type NewPos =
-		m_FormatString.find(ArgChar, m_FormatStringPos);
+    bool Continue;
+    do{
+        Continue = false;
+        string_size_type NewPos =
+            m_FormatString.find(ArgChar, m_FormatStringPos);
 
-		if(NewPos!=string_type::npos){
-			char PlaceholderLen=1;//может быть 1 или 2 (в случае "%_")
-			if(NewPos+1<FormatLen){
-				const Ch Char2 = m_FormatString[NewPos+1];
+        if(NewPos != string_type::npos) {
+            char PlaceholderLen=1;
+            if(NewPos+1 < FormatLen) {
+                const Ch Char2 = m_FormatString[NewPos+1];
 
-				if(Char2==ArgChar){// "%%"
-					++NewPos;
-					Continue=true;
-				}
-				else if(Char2==ArgChar2) PlaceholderLen=2;// "%_"
-				//else //случай с одинарным "%"
-			}
-			//else //случай с одинарным "%" в конце строки формата
+                if(Char2 == ArgChar) { // "%%"
+                    ++NewPos;
+                    Continue=true;
+                } else if(Char2 == ArgChar2)
+                    PlaceholderLen=2; // "%_"
+            }
 
-			//сохраняем часть строки между параметрами
-			m_OutStream.write(&(m_FormatString.c_str()[m_FormatStringPos]),
-			                  NewPos-m_FormatStringPos);
+            m_OutStream.write(&(m_FormatString.c_str()[m_FormatStringPos]),
+                              NewPos-m_FormatStringPos);
 
-			m_FormatStringPos=NewPos+PlaceholderLen;
-		}
-		else{
-			//сохраняем остаток строки
-			push_remainder();
-		}
-	}while(Continue);
+            m_FormatStringPos=NewPos+PlaceholderLen;
+        } else {
+            push_remainder();
+        }
+    } while(Continue);
 }
 
 template<class Ch, class Tr>
 void basic_string_format<Ch, Tr>::push_remainder()
 {
-	if(m_FormatStringPos!=basic_string_format<Ch, Tr>::string_type::npos){
-		//сохраняем остаток строки
-		m_OutStream.write(&(m_FormatString.c_str()[m_FormatStringPos]),
-		                  m_FormatString.length()-m_FormatStringPos);
-		m_FormatStringPos=string_type::npos;
-	}
+    if(m_FormatStringPos != basic_string_format<Ch, Tr>::string_type::npos) {
+        m_OutStream.write(&(m_FormatString.c_str()[m_FormatStringPos]),
+                          m_FormatString.length() - m_FormatStringPos);
+        m_FormatStringPos = string_type::npos;
+    }
 }
 
 template<class Ch, class Tr>
 std::basic_ostream<Ch, Tr>&
-operator<<(std::basic_ostream<Ch, Tr>& os, basic_string_format<Ch, Tr>& sf)
+operator<< (std::basic_ostream<Ch, Tr>& os, basic_string_format<Ch, Tr>& sf)
 {
-	os<<sf.str();
-	return os;
+    os << sf.str();
+    return os;
 }
 
 typedef basic_string_format<char> string_format;
