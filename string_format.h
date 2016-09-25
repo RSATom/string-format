@@ -22,8 +22,7 @@
 * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 *******************************************************************************/
 
-#if !defined(STRING_FORMAT_H)
-#define STRING_FORMAT_H
+#pragma once
 
 #include <sstream>
 
@@ -229,5 +228,3 @@ typedef wstring_format tstring_format;
 #else
 typedef string_format tstring_format;
 #endif
-
-#endif // !defined(AFX_STRING_FORMAT_H__8A4AE1C8_3D8A_40C3_B56E_0E619BC3BFA0__INCLUDED_)
