@@ -45,8 +45,8 @@ private:
 public:
     /*
     "%%" - will be replaced with "%";
-    "%_" - placehoder;
-    if threre are no any placeholder remain next values will be added to end
+    "%_" - placeholder;
+    if there are no any placeholder remains next values will be added to end
     */
 
     basic_string_format() : m_FormatStringPos(0) {}
